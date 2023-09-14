@@ -1,0 +1,221 @@
+---
+title: "Cleaning and Wrangling"
+format: html
+---
+
+### first thing to do is to set up github repo and pull to make sure that it's the most up to date project
+
+# Setup
+
+```{r load libraries}
+library(dplyr)
+library(tidyr)
+library(readr)
+```
+
+# Data Sources
+
+## Read in data
+
+```{r}
+catch_original <- read_csv ("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
+```
+
+## Exploring data
+
+```{r}
+colnames(catch_original)
+
+head(catch_original)
+
+summary(catch_original)
+
+unique(catch_original$Region)
+
+```
+
+# Clean and Reshape data
+
+## Using 'select()' function
+
+-   'select()' function gets columns "filter()' function gets the rows
+
+```{r}
+#only selecting a subset of the data
+catch_data <- catch_original %>% 
+  select(Region, 
+         Year, 
+         Chinook)
+```
+
+```{r}
+#removing columns and only taking a subset of the data
+catch_data <- catch_original %>% 
+  select(-All, -notesRegCode)
+```
+
+## Check column types
+
+-   'mutate()' function creates and removes and manipulates columns
+
+```{r}
+dplyr::glimpse(catch_data)
+
+catch_clean <- catch_data %>% 
+  mutate(Chinook = as.numeric(Chinook)) #keeping the same variable name
+
+class(catch_clean$Chinook)
+
+```
+
+```{r}
+# within the column Chinook, where is the NA?
+i <- which(is.na(catch_clean$Chinook))
+i
+#could use the 'unique()' function, but could be hard if there are a lot of unique values within the variable
+```
+
+```{r}
+#indexing in r
+catch_data[i,] #[x,y] x = rows, y = cols
+```
+
+## Replace "i" with "1"
+
+```{r}
+
+#override catch_clean
+
+catch_clean <- catch_data %>% 
+  mutate(Chinook = if_else(condition = Chinook == "I",
+                            true = "1", #still a character because the original data class is a class and can't mix data classes
+                            false = Chinook), #use whatever value that is in Chinook if the condition is false
+         Chinook = as.numeric (Chinook)) 
+
+
+#check
+catch_clean[i,]
+```
+
+## Reshape data
+
+```{r}
+
+catch_long <- catch_clean %>% 
+  pivot_longer(
+    cols = -c(Region, Year), #pivot on all columns except Region and Year
+    names_to = "species", #all col names and putting them into a variable "species"
+    values_to = "catch" #all values into a variable "catch"
+    
+  )
+```
+
+```{r}
+
+catch_wide <- catch_long %>%
+    pivot_wider(names_from = species,
+                values_from = catch)
+
+head(catch_wide)
+```
+
+## Rename columns 'rename()'
+
+```{r}
+
+catch_long <- catch_long %>% 
+  # new name = old name
+  rename(catch_thousands = catch) %>%
+  # order matters... if you already used the rename function previously, then you can't run these lines of code since it essentially doesn't exist anymore
+  # can either comment out the 'rename()' line of code or use
+  #mutate (catch_thousands = catch * 1000) and need to select out the "catch" column to remove from original dataset
+  mutate(catch_thousands = catch_thousands * 1000)
+
+```
+
+## Summary stats using 'group_by()' and 'summarize()'
+
+```{r}
+
+mean_region <- catch_long %>% 
+  group_by(Region) %>% 
+  summarize(mean_catch = mean(catch_thousands))
+
+```
+
+```{r}
+# counting number of observations in each region
+# could name is as n = ()
+count_region <- catch_long %>% 
+  group_by(Region) %>% 
+  summarize(count = n()) 
+```
+
+## Filtering rows using filter
+
+```{r}
+# filter for SSE regons only
+sse_catch <- catch_long %>% 
+  filter(Region == "SSE") 
+
+# filter for all regions except for SSE
+#sse_catch <- catch_long %>% 
+  #filter(Region != "SSE") 
+
+
+#check 
+unique(sse_catch$Region)
+```
+
+## Sort data using 'arrange()'
+
+```{r}
+
+# sort by ascending order
+mean_region <- mean_region %>% 
+  arrange (mean_catch)
+
+#sort by descending order
+#mean_region <- mean_region %>% 
+  #arrange(desc(mean_catch))
+
+```
+
+## Split vvalues in columns using 'separate()' and 'unite()'
+
+```{r}
+#creating dummy DF
+
+sites_df <- data.frame(site = c("HAW-101",
+                                "HAW-103",
+                                "OAH-320",
+                                "OAH-219",
+                                "MAU-039"))
+
+sites_df %>% 
+  separate(site, 
+           #column names
+           c("island", "site_number"),
+          #what kind of separator
+          sep = "-") 
+```
+
+```{r}
+dates_df <- data.frame(
+  year = c("1930",
+           "1930",
+           "1930"),
+  month = c("12",
+            "12",
+            "12"),
+  day = c("14",
+          "15",
+          "20")
+)
+
+dates_df %>% 
+  unite(dates,
+        year, month, day,
+        sep = "-")
+```
+
