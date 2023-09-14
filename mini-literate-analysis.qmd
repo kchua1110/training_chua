@@ -1,0 +1,89 @@
+---
+title: "Mini Literate Analysis"
+format: html
+---
+
+## Introduction
+
+### About this data
+
+This data comes from the North Pole Environmental Observatory Bottle Chemistry Project, which includes measurements about the seawater chemistry, taken from 2000-2014. It was downloaded from the [Artic Data Center](https://arcticdata.io/catalog/view/doi:10.18739/A25T3FZ8X) on September 13, 2023.
+
+### Setup - call all libraries at the top of your code
+
+```{r}
+library(readr) #part of tidyverse suite of packages
+```
+
+### Read in data
+
+```{r}
+#| warning: false 
+#don't add space between {r} and #| or else code won't run 
+
+getwd() #tells you where you're starting point is
+
+bg_chem <- read_csv ("data/BGchem2008data.csv")
+#get warnings when getting data but don't want them to appear in report so use #| warning:false at top of the code
+
+```
+
+-   Exploring my data
+
+```{r}
+#| echo: false
+#| eval: false
+#information of dataframe
+## Prints the column names of my data frame
+colnames(bg_chem)
+
+## General structure of the data frame - shows class of each column
+str(bg_chem)
+
+## First 6 lines of the data frame
+head(bg_chem)
+
+## Summary of each column of data
+summary(bg_chem)
+
+## Prints unique values in a column (in this case Date)
+unique(bg_chem$Date)
+
+```
+
+
+## Analysis
+
+### Calculate summary statistics
+```{r}
+nitrate <- mean (bg_chem$NO3)
+
+nitrite <- mean (bg_chem$NO2)
+
+amm <- mean (bg_chem$NH4)
+
+phos <- mean (bg_chem$P)
+```
+
+
+### Calculate the Redfield Ratio
+
+```{r}
+ratio <- (nitrate + nitrite + amm)/ phos
+ration1 <- sum(nitrate + nitrite + amm)/phos
+```
+
+
+### Plot Redfield Ratio
+```{r}
+#| echo: false
+plot(bg_chem$P, bg_chem$NO3 + bg_chem$NO2 + bg_chem$NH4)
+
+# p = x-axis
+# nitrogen components = y-axis
+```
+
+
+## Conclusion
+
+The Redfield Ratio for this dataset is approximately `r round(ratio)`.

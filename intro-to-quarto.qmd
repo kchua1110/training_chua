@@ -1,0 +1,56 @@
+---
+title: "Introduction to Quarto"
+format: html
+bibliography: references.bib
+---
+
+Formating rules:
+
+# This is a header level 1
+
+## This is a header level 2
+
+### This is a header level 3
+
+**This is a bold text.**
+
+<br> this is a break
+
+Write just a plain text
+
+GO to help \> markdown quick reference for more info
+
+Roses are red, <br><br><br>
+
+*Violets are blue.*
+
+playing with line breaks
+
+## Adding citations
+
+This is a very important fact about water pollutants [@oke2020]
+
+-   download bib file from zotero and upload to the file
+
+-   From there, you can get the DOI or other references
+
+## Inserting tables
+
+-   insert \> insert table \>
+
+| Pollutants | Col | Col3 |
+|------------|-----|------|
+| High       |     |      |
+| Medium     |     |      |
+| Low        |     |      |
+
+```{r}
+
+4+4
+
+vector <- c(6.0, 7.3, 4.4)
+
+
+```
+
+
